@@ -1,5 +1,5 @@
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
-import connectMongoDB from "@/utils/connectMongoDB";
+import connectDB from "@/utils/connectDb";
 import type { NextApiRequest, NextApiResponse } from "next";
 
 type Data = {
@@ -10,6 +10,6 @@ export default function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  connectMongoDB();
-  res.status(200).json({ name: "John Corner" });
+  connectDB();
+  res.status(200).json({ name: "John Doe" });
 }

@@ -1,75 +1,64 @@
-import { NextApiRequest, NextApiResponse } from "next";
+// Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import User from "@/models/User";
-import connectMongoDB from "@/utils/connectMongoDB";
+import connectDB from "@/utils/connectDb";
+import type { NextApiRequest, NextApiResponse } from "next";
 import validator from "validator";
 import bcrypt from "bcryptjs";
-import DOMPurify from "dompurify";
-import { JSDOM } from "jsdom";
 
 type Data = {
   message: string;
 };
 
-const window = new JSDOM("").window;
-const purify = DOMPurify(window as any);
-
 export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse<Data>
 ) {
-  if (req.method !== "POST") {
-    return res.status(405).json({ message: "Method not allowed" });
-  }
-
   try {
-    await connectMongoDB();
-
+    await connectDB();
     const { first_name, last_name, email, password } = req.body;
 
-    const sanitizedFirstName = purify.sanitize(first_name);
-    const sanitizedLastName = purify.sanitize(last_name);
-    const sanitizedEmail = purify.sanitize(email);
-    const sanitizedPassword = purify.sanitize(password);
-
-    if (
-      !sanitizedFirstName ||
-      !sanitizedLastName ||
-      !sanitizedEmail ||
-      !sanitizedPassword
-    ) {
-      return res.status(400).json({ message: "Please fill in all fields" });
+    if (!first_name || !last_name || !email || !password) {
+      return res.status(400).json({
+        message: "Please fill data",
+      });
     }
 
-    if (!validator.isEmail(sanitizedEmail)) {
-      return res.status(400).json({ message: "Please provide a valid email" });
+    if (!validator.isEmail(email)) {
+      return res.status(400).json({
+        message: "Please add a valid email",
+      });
     }
 
-    const existingUser = await User.findOne({ email: sanitizedEmail });
-    if (existingUser) {
-      return res.status(400).json({ message: "Email already exists" });
+    const user = await User.findOne({ email: email });
+    if (user) {
+      return res.status(400).json({
+        message: "Email already exits",
+      });
     }
 
-    if (sanitizedPassword.length < 6) {
-      return res
-        .status(400)
-        .json({ message: "Password must be at least 6 characters long" });
+    if (password.length < 6) {
+      return res.status(400).json({
+        message: "Password must be more than 6 characters",
+      });
     }
 
     const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(sanitizedPassword, salt);
-
+    console.log("salt", salt);
+    const cryptPassword = await bcrypt.hash(password, salt);
+    console.log("cryptPassword", cryptPassword);
     const newUser = new User({
-      first_name: sanitizedFirstName,
-      last_name: sanitizedLastName,
-      email: sanitizedEmail,
-      password: hashedPassword,
+      first_name,
+      last_name,
+      email,
+      password: cryptPassword,
     });
 
     await newUser.save();
 
-    return res.status(201).json({ message: "Register Success!!" });
+    res.json({
+      message: "Register Success!!",
+    });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ message: "Internal server error" });
+    console.log(error);
   }
 }
