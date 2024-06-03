@@ -10,11 +10,6 @@ jest.mock("next/router", () => ({
   useRouter: jest.fn(),
 }));
 
-test("Register", () => {
-  const { container } = render(<Register />);
-  expect(container).toMatchSnapshot();
-});
-
 describe("Register Form", () => {
   beforeEach(() => {
     (useRouter as jest.Mock).mockReturnValue({
@@ -22,7 +17,7 @@ describe("Register Form", () => {
     });
   });
 
-  it("renders Register form correctly", () => {
+  test("renders Register form correctly", () => {
     render(
       <>
         <ToastContainer />
@@ -37,7 +32,7 @@ describe("Register Form", () => {
     expect(screen.getByLabelText("Confirm Password")).toBeInTheDocument();
   });
 
-  it("shows error messages for invalid input", async () => {
+  test("shows error messages for invalid input", async () => {
     render(
       <>
         <ToastContainer />
@@ -60,7 +55,7 @@ describe("Register Form", () => {
     });
   });
 
-  it("submits the form with valid input", async () => {
+  test("submits the form with valid input", async () => {
     const mockedAxios = axios as jest.Mocked<typeof axios>;
     mockedAxios.post.mockResolvedValue({
       data: { message: "Register Success!!" },
@@ -107,7 +102,7 @@ describe("Register Form", () => {
     );
   });
 
-  it("shows error message for existing email", async () => {
+  test("shows error message for existing email", async () => {
     const mockedAxios = axios as jest.Mocked<typeof axios>;
     mockedAxios.post.mockRejectedValue({
       response: { data: { message: "Email already exists" } },

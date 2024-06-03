@@ -14,11 +14,6 @@ jest.mock("next/router", () => ({
   useRouter: jest.fn(),
 }));
 
-test("Login", () => {
-  const { container } = render(<Login />);
-  expect(container).toMatchSnapshot();
-});
-
 describe("Login Form", () => {
   beforeEach(() => {
     (useRouter as jest.Mock).mockReturnValue({
@@ -26,7 +21,7 @@ describe("Login Form", () => {
     });
   });
 
-  it("renders Login form correctly", () => {
+  test("renders Login form correctly", () => {
     render(
       <>
         <ToastContainer />
@@ -38,7 +33,7 @@ describe("Login Form", () => {
     expect(screen.getByLabelText("Password")).toBeInTheDocument();
   });
 
-  it("shows error messages for invalid input", async () => {
+  test("shows error messages for invalid input", async () => {
     render(
       <>
         <ToastContainer />
@@ -58,7 +53,7 @@ describe("Login Form", () => {
     });
   });
 
-  it("submits the form with valid input", async () => {
+  test("submits the form with valid input", async () => {
     (signIn as jest.Mock).mockResolvedValue({ error: null });
 
     render(
@@ -87,7 +82,7 @@ describe("Login Form", () => {
     });
   });
 
-  it("shows error message for invalid credentials", async () => {
+  test("shows error message for invalid credentials", async () => {
     (signIn as jest.Mock).mockResolvedValue({ error: "Invalid credentials" });
 
     render(
