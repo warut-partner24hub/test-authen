@@ -1,5 +1,5 @@
 import User from "@/models/User";
-import connectDB from "@/utils/connectDb";
+import connectMongoDB from "@/utils/connectMongoDB";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
@@ -7,24 +7,16 @@ import bcrypt from "bcryptjs";
 export default NextAuth({
   providers: [
     CredentialsProvider({
-      // The name to display on the sign in form (e.g. "Sign in with...")
       name: "Credentials",
-      // `credentials` is used to generate a form on the sign in page.
-      // You can specify which fields should be submitted, by adding keys to the `credentials` object.
-      // e.g. domain, username, password, 2FA token, etc.
-      // You can pass any HTML attribute to the <input> tag through the object.
       credentials: {
         email: { label: "Email", type: "text" },
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials, req) {
-        console.log("authorize credentials", credentials);
-        console.log("authorize req", req);
-        // Add logic here to look up the user from the credentials supplied
-        await connectDB();
+        await connectMongoDB();
         const user = await User.findOne({ email: credentials!.email });
         if (!user) {
-          throw new Error("Email is not register");
+          throw new Error("Email is not registered");
         }
 
         const isPasswordCorrect = await bcrypt.compare(
@@ -33,9 +25,15 @@ export default NextAuth({
         );
 
         if (!isPasswordCorrect) {
-          throw new Error("Password is incorrect!!");
+          throw new Error("Password is incorrect");
         }
-        return user;
+
+        return {
+          id: user._id,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email: user.email,
+        };
       },
     }),
   ],
@@ -46,19 +44,21 @@ export default NextAuth({
     signIn: "/auth",
   },
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user }) {
       if (user) {
-        token.provider = account?.provider;
+        token.id = user.id;
         token.first_name = user.first_name;
         token.last_name = user.last_name;
+        token.email = user.email;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
-        session.user.provider = token.provider;
+        session.user.id = token.id;
         session.user.first_name = token.first_name;
         session.user.last_name = token.last_name;
+        session.user.email = token.email;
       }
       return session;
     },
