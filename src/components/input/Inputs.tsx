@@ -1,8 +1,6 @@
-import { useState } from "react";
-import { ImEye, ImEyeBlocked } from "react-icons/im";
-import { IoAlertCircleOutline } from "react-icons/io5";
+import React from "react";
 
-interface IInputsProps {
+interface InputProps {
   name: string;
   label: string;
   type: string;
@@ -12,7 +10,7 @@ interface IInputsProps {
   disable?: boolean;
 }
 
-const Inputs: React.FunctionComponent<IInputsProps> = ({
+const Input: React.FC<InputProps> = ({
   name,
   label,
   type,
@@ -21,53 +19,62 @@ const Inputs: React.FunctionComponent<IInputsProps> = ({
   error,
   disable,
 }) => {
-  const [showPassword, setShowPassword] = useState(false);
-
   return (
     <div className="w-full">
       <label
-        htmlFor={name}
         className="block text-sm font-medium text-gray-700 mb-1"
+        htmlFor={name}
       >
         {label}
       </label>
       <div className="relative">
         <input
-          id={name}
-          name={name}
-          type={showPassword && type === "password" ? "text" : type}
-          placeholder={placeholder}
-          {...register(name)}
-          disabled={disable}
           className={`block w-full px-4 py-2 border rounded ${
             error ? "border-red-500" : "border-gray-300"
-          } focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-            disable ? "bg-gray-100" : "bg-white"
-          }`}
+          } focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white`}
+          id={name}
+          name={name}
+          placeholder={placeholder}
+          type={type}
+          {...register(name)}
+          disabled={disable}
         />
-        {type === "password" && (
-          <button
-            type="button"
-            className={`absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 ${
-              error ? "right-10" : "right-3"
-            }`}
-            onClick={() => setShowPassword((prev) => !prev)}
-            aria-label={showPassword ? "Hide password" : "Show password"}
-          >
-            {showPassword ? <ImEye /> : <ImEyeBlocked />}
-          </button>
+        {error && (
+          <div className="absolute right-2 top-1/2 transform -translate-y-1/2 text-red-500">
+            <svg
+              fill="currentColor"
+              height="20"
+              stroke="currentColor"
+              strokeWidth="0"
+              viewBox="0 0 512 512"
+              width="20"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="M448 256c0-106-86-192-192-192S64 150 64 256s86 192 192 192 192-86 192-192z"
+                fill="none"
+                strokeMiterlimit="10"
+                strokeWidth="32"
+              />
+              <path
+                d="M250.26 166.05 256 288l5.73-121.95a5.74 5.74 0 0 0-5.79-6h0a5.74 5.74 0 0 0-5.68 6z"
+                fill="none"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="32"
+              />
+              <path d="M256 367.91a20 20 0 1 1 20-20 20 20 0 0 1-20 20z" />
+            </svg>
+          </div>
         )}
         {error && (
-          <>
-            <div className="absolute right-2 top-1/2 transform -translate-y-1/2 text-red-500">
-              <IoAlertCircleOutline size={20} />
-            </div>
-            <p className="mt-1 text-xs text-red-500">{error}</p>
-          </>
+          <p className="mt-1 text-xs text-red-500" id={`${name}-error`}>
+            {error}
+          </p>
         )}
       </div>
     </div>
   );
 };
 
-export default Inputs;
+export default Input;

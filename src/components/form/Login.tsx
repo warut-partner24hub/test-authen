@@ -5,9 +5,8 @@ import Inputs from "../input/Inputs";
 import { useRouter } from "next/router";
 import { toast, ToastContainer } from "react-toastify";
 import { signIn } from "next-auth/react";
-import "react-toastify/dist/ReactToastify.css"; // Import CSS for toastify
-
-interface ILoginProps {}
+import "react-toastify/dist/ReactToastify.css";
+import React, { useCallback } from "react";
 
 const FormSchema = z.object({
   email: z.string().email("Please enter a valid email"),
@@ -19,7 +18,7 @@ const FormSchema = z.object({
 
 type FormSchemaType = z.infer<typeof FormSchema>;
 
-const Login: React.FunctionComponent<ILoginProps> = () => {
+const Login: React.FunctionComponent = React.memo(() => {
   const router = useRouter();
   const {
     register,
@@ -29,31 +28,44 @@ const Login: React.FunctionComponent<ILoginProps> = () => {
     resolver: zodResolver(FormSchema),
   });
 
-  const onSubmit: SubmitHandler<FormSchemaType> = async (data) => {
-    try {
-      const resSignIn: any = await signIn("credentials", {
-        redirect: false,
-        email: data.email,
-        password: data.password,
-      });
+  const onSubmit: SubmitHandler<FormSchemaType> = useCallback(
+    async (data) => {
+      try {
+        const resSignIn: any = await signIn("credentials", {
+          redirect: false,
+          email: data.email,
+          password: data.password,
+        });
 
-      if (resSignIn.error) {
-        toast.error(resSignIn.error);
-      } else {
-        router.push("/");
+        if (resSignIn.error) {
+          if (resSignIn.error === "CredentialsSignin") {
+            toast.error(
+              "Invalid credentials. Please check your email and password."
+            );
+          } else {
+            toast.error("An unexpected error occurred. Please try again.");
+          }
+        } else {
+          router.push("/");
+        }
+      } catch (error) {
+        toast.error("An unexpected error occurred. Please try again.");
       }
-    } catch (error) {
-      toast.error("An unexpected error occurred. Please try again.");
-    }
-  };
+    },
+    [router]
+  );
 
   return (
     <>
       <ToastContainer />
-      <div className="flex flex-col justify-center items-center bg-gray-100">
+      <div className="flex flex-col justify-center items-center bg-gray-100 min-h-screen">
         <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
           <h1 className="text-2xl font-bold mb-6 text-center">Login Form</h1>
-          <form className="space-y-6" onSubmit={handleSubmit(onSubmit)}>
+          <form
+            className="space-y-6"
+            onSubmit={handleSubmit(onSubmit)}
+            aria-label="Login form"
+          >
             <Inputs
               name="email"
               label="Email"
@@ -73,22 +85,24 @@ const Login: React.FunctionComponent<ILoginProps> = () => {
               disable={isSubmitting}
             />
             <p className="text-sm">
-              Don't have an account?{" "}
-              <span
-                className="text-blue-500 cursor-pointer"
+              Don&apos;t have an account?{" "}
+              <button
+                type="button"
+                className="text-blue-500 cursor-pointer underline focus:outline-none"
                 onClick={() =>
                   router.push({
                     pathname: router.pathname,
                     query: { tab: "signup" },
                   })
                 }
+                aria-label="Sign up"
               >
                 Sign up
-              </span>
+              </button>
             </p>
             <button
               type="submit"
-              className="w-full py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 transition duration-200"
+              className="w-full py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
               disabled={isSubmitting}
             >
               {isSubmitting ? "Submitting..." : "Submit"}
@@ -98,6 +112,8 @@ const Login: React.FunctionComponent<ILoginProps> = () => {
       </div>
     </>
   );
-};
+});
+
+Login.displayName = "Login";
 
 export default Login;
