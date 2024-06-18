@@ -3,6 +3,7 @@ import connectDB from "@/utils/connectDb";
 import NextAuth from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
+import FacebookProvider from 'next-auth/providers/facebook';
 
 export default NextAuth({
   providers: [
@@ -38,6 +39,10 @@ export default NextAuth({
         return user;
       },
     }),
+    FacebookProvider({
+      clientId: process.env.FACEBOOK_CLIENT_ID,
+      clientSecret: process.env.FACEBOOK_CLIENT_SECRET,
+    })
   ],
   session: {
     strategy: "jwt",
@@ -46,7 +51,11 @@ export default NextAuth({
     signIn: "/auth",
   },
   callbacks: {
-    async jwt({ token, user, account }) {
+    async jwt({ token, user, account, profile }) {
+      console.log('jwt token', token);
+      console.log('jwt user', user);
+      console.log('jwt account', account);
+      console.log('jwt profile', profile);
       if (user) {
         token.provider = account?.provider;
         token.first_name = user.first_name;
@@ -55,6 +64,8 @@ export default NextAuth({
       return token;
     },
     async session({ session, token }) {
+      console.log('session token', token);
+      console.log('session session', session);
       if (session.user) {
         session.user.provider = token.provider;
         session.user.first_name = token.first_name;

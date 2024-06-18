@@ -8,6 +8,7 @@ import { toast, ToastContainer } from "react-toastify";
 import axios from "axios";
 import React from "react";
 import { useRouter } from "next/router";
+import { signIn } from "next-auth/react";
 
 const FormSchema = z
   .object({
@@ -64,6 +65,7 @@ const Register: React.FunctionComponent = React.memo(() => {
         } else {
           toast.error("Registration failed. Please try again.");
         }
+        alert('can not register')
       }
     },
     [reset, router]
@@ -169,6 +171,8 @@ const Register: React.FunctionComponent = React.memo(() => {
             >
               {isSubmitting ? "Submitting..." : "Submit"}
             </button>
+            <button onClick={() => signIn('facebook')}>Sign in with Facebook</button>
+            <button onClick={() => signIn('google')}>Sign in with Google</button>
           </form>
         </div>
       </div>

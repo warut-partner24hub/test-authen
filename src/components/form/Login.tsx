@@ -108,6 +108,12 @@ const Login: React.FunctionComponent = React.memo(() => {
               {isSubmitting ? "Submitting..." : "Submit"}
             </button>
           </form>
+          <button onClick={() => signIn('facebook')} type="submit"
+            className="w-full mt-2 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            disabled={isSubmitting}>Sign in with Facebook</button>
+          <button onClick={() => signIn('google')} type="submit"
+            className="w-full mt-2 py-2 bg-blue-500 text-white font-semibold rounded hover:bg-blue-600 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            disabled={isSubmitting}>Sign in with Google</button>
         </div>
       </div>
     </>
